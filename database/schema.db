@@ -1,0 +1,55 @@
+CREATE TABLE region (
+    id         SERIAL PRIMARY KEY,
+    name       TEXT NOT NULL,
+    level      TEXT NOT NULL CHECK (level IN ('national', 'state', 'city')),
+    state      CHAR(2),
+    parent_id  INTEGER REFERENCES region (id),
+    UNIQUE (name, level),
+    CHECK (
+        (level = 'national' AND parent_id IS NULL)
+        OR (level <> 'national' AND parent_id IS NOT NULL)
+    )
+);
+
+CREATE TABLE category (
+    id    SERIAL PRIMARY KEY,
+    name  TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE opportunity (
+    id                  SERIAL PRIMARY KEY,
+    title               TEXT NOT NULL,
+    description         TEXT NOT NULL,
+    eligibility         TEXT NOT NULL,
+    required_documents  TEXT[] NOT NULL DEFAULT '{}',
+    application_steps   TEXT[] NOT NULL DEFAULT '{}',
+    region_id           INTEGER NOT NULL REFERENCES region (id),
+    category_id         INTEGER NOT NULL REFERENCES category (id),
+    last_reviewed       DATE NOT NULL,
+    status              TEXT NOT NULL DEFAULT 'unconfirmed'
+                        CHECK (status IN ('current', 'outdated', 'unconfirmed')),
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE source (
+    id              SERIAL PRIMARY KEY,
+    opportunity_id  INTEGER NOT NULL REFERENCES opportunity (id) ON DELETE CASCADE,
+    name            TEXT NOT NULL,
+    url             TEXT NOT NULL,
+    consulted_at    DATE NOT NULL,
+    UNIQUE (opportunity_id, url)
+);
+
+CREATE TABLE document (
+    id               SERIAL PRIMARY KEY,
+    opportunity_id   INTEGER NOT NULL REFERENCES opportunity (id) ON DELETE CASCADE,
+    source_id        INTEGER REFERENCES source (id) ON DELETE SET NULL,
+    chunk_index      INTEGER NOT NULL,
+    content          TEXT NOT NULL,
+    embedding_model  TEXT,
+    UNIQUE (opportunity_id, chunk_index)
+);
+
+CREATE INDEX idx_opportunity_region_category ON opportunity (region_id, category_id);
+CREATE INDEX idx_source_opportunity ON source (opportunity_id);
+CREATE INDEX idx_document_opportunity ON document (opportunity_id);
