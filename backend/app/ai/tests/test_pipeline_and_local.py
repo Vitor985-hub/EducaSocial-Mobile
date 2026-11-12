@@ -6,7 +6,7 @@ from sqlalchemy import Engine
 from app.core.exceptions import ConfigurationError, ProviderError
 from app.repositories.local import LocalChunkRepository
 from app.repositories.mysql import SqlChunkRepository
-from app.tools.check_schema import find_schema_problems
+from app.tools.check_schema import describe_contents, find_schema_problems
 from ingestion.pipeline import build_documents, embed_pending
 from tests.fakes import HashEmbedder
 
@@ -67,6 +67,18 @@ def test_embed_apply_batches_and_is_idempotent(
     assert "12/12" in capsys.readouterr().out
 
 
+def test_changing_the_embedding_model_reembeds_every_document(seeded_engine: Engine) -> None:
+    repository = SqlChunkRepository(seeded_engine)
+    build_documents(repository, 1200, 150, apply=True)
+
+    embed_pending(repository, HashEmbedder(model_name="modelo-1"), apply=True)
+    report = embed_pending(repository, HashEmbedder(model_name="modelo-2"), apply=True)
+
+    assert report.pending == 12
+    assert repository.load_chunks("modelo-1") == []
+    assert len(repository.load_chunks("modelo-2")) == 12
+
+
 def test_embed_rejects_inconsistent_vectors(seeded_engine: Engine) -> None:
     repository = SqlChunkRepository(seeded_engine)
     build_documents(repository, 1200, 150, apply=True)
@@ -125,11 +137,34 @@ def test_schema_check_passes_on_expected_schema(engine: Engine) -> None:
 
 def test_schema_check_reports_missing_table_and_columns(engine: Engine) -> None:
     with engine.begin() as connection:
-        connection.exec_driver_sql("DROP TABLE document_embedding")
+        connection.exec_driver_sql("DROP TABLE region")
         connection.exec_driver_sql("DROP TABLE source")
         connection.exec_driver_sql("CREATE TABLE source (id INTEGER PRIMARY KEY, name TEXT)")
 
     problems = find_schema_problems(engine)
 
-    assert "Tabela ausente: document_embedding" in problems
+    assert "Tabela ausente: region" in problems
     assert "Colunas ausentes em source: opportunity_id, url" in problems
+
+
+def test_schema_check_reports_missing_embedding_column_in_document(engine: Engine) -> None:
+    with engine.begin() as connection:
+        connection.exec_driver_sql("DROP TABLE document")
+        connection.exec_driver_sql(
+            "CREATE TABLE document (id INTEGER PRIMARY KEY, opportunity_id INTEGER, "
+            "source_id INTEGER, chunk_index INTEGER, content TEXT, embedding_model TEXT)"
+        )
+
+    assert "Colunas ausentes em document: embedding" in find_schema_problems(engine)
+
+
+def test_schema_description_counts_documents_by_embedding_model(seeded_engine: Engine) -> None:
+    repository = SqlChunkRepository(seeded_engine)
+    build_documents(repository, 1200, 150, apply=True)
+    embed_pending(repository, HashEmbedder(model_name="modelo-1"), apply=True, batch_size=5)
+
+    lines = describe_contents(seeded_engine)
+
+    assert "document: 12 linhas" in lines
+    assert "  documentos com embedding (modelo-1): 12" in lines
+    assert "  documentos sem embedding: 0" in lines

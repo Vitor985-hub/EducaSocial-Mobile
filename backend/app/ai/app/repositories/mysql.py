@@ -12,13 +12,13 @@ from sqlalchemy import (
     String,
     Table,
     Text,
-    and_,
-    delete,
+    bindparam,
     func,
     insert,
+    or_,
     select,
+    update,
 )
-from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.types import JSON
 
@@ -78,16 +78,7 @@ document = Table(
     Column("chunk_index", Integer),
     Column("content", Text),
     Column("embedding_model", String(255)),
-)
-
-document_embedding = Table(
-    "document_embedding",
-    metadata,
-    Column("id", _id, primary_key=True),
-    Column("document_id", _id),
-    Column("embedding_model", String(255)),
-    Column("dimensions", Integer),
-    Column("embedding", JSON),
+    Column("embedding", JSON(none_as_null=True)),
 )
 
 
@@ -119,15 +110,17 @@ class SqlChunkRepository:
                 region.c.name.label("region_name"),
                 source.c.name.label("source_name"),
                 source.c.url.label("source_url"),
-                document_embedding.c.embedding,
+                document.c.embedding,
             )
-            .select_from(document_embedding)
-            .join(document, document.c.id == document_embedding.c.document_id)
+            .select_from(document)
             .join(opportunity, opportunity.c.id == document.c.opportunity_id)
             .join(region, region.c.id == opportunity.c.region_id)
             .outerjoin(parent, parent.c.id == region.c.parent_id)
             .outerjoin(source, source.c.id == document.c.source_id)
-            .where(document_embedding.c.embedding_model == embedding_model)
+            .where(
+                document.c.embedding.is_not(None),
+                document.c.embedding_model == embedding_model,
+            )
             .order_by(document.c.id)
         )
         fallback_statement = select(source.c.opportunity_id, source.c.name, source.c.url).order_by(
@@ -140,9 +133,10 @@ class SqlChunkRepository:
             fallback: dict[int, tuple[str, str]] = {}
             for opportunity_id, name, url in fallback_rows:
                 fallback.setdefault(int(opportunity_id), (name, url))
-            return [self._to_chunk(row, fallback) for row in rows]
+            chunks = [self._to_chunk(row, fallback) for row in rows]
         except (SQLAlchemyError, ValueError, TypeError) as exc:
             raise StoreError("Falha ao carregar os chunks do banco.") from exc
+        return [chunk for chunk in chunks if chunk.embedding]
 
     @staticmethod
     def _to_chunk(row: Mapping[str, Any], fallback: Mapping[int, tuple[str, str]]) -> StoredChunk:
@@ -168,14 +162,13 @@ class SqlChunkRepository:
     def pending_documents(self, embedding_model: str) -> list[PendingDocument]:
         statement = (
             select(document.c.id, document.c.content)
-            .outerjoin(
-                document_embedding,
-                and_(
-                    document_embedding.c.document_id == document.c.id,
-                    document_embedding.c.embedding_model == embedding_model,
-                ),
+            .where(
+                or_(
+                    document.c.embedding.is_(None),
+                    document.c.embedding_model.is_(None),
+                    document.c.embedding_model != embedding_model,
+                )
             )
-            .where(document_embedding.c.id.is_(None))
             .order_by(document.c.id)
         )
         try:
@@ -187,35 +180,21 @@ class SqlChunkRepository:
 
     def save_embeddings(self, embedding_model: str, embeddings: Mapping[int, list[float]]) -> int:
         rows = [
-            {
-                "document_id": document_id,
-                "embedding_model": embedding_model,
-                "dimensions": len(vector),
-                "embedding": vector,
-            }
+            {"target_id": document_id, "vector": vector}
             for document_id, vector in embeddings.items()
         ]
+        statement = (
+            update(document)
+            .where(document.c.id == bindparam("target_id"))
+            .values(
+                embedding=bindparam("vector", type_=JSON(none_as_null=True)),
+                embedding_model=embedding_model,
+            )
+        )
         try:
             with self._engine.begin() as connection:
                 for start in range(0, len(rows), WRITE_BATCH_SIZE):
-                    batch = rows[start : start + WRITE_BATCH_SIZE]
-                    if self._engine.dialect.name == "mysql":
-                        statement = mysql_insert(document_embedding).values(batch)
-                        connection.execute(
-                            statement.on_duplicate_key_update(
-                                dimensions=statement.inserted.dimensions,
-                                embedding=statement.inserted.embedding,
-                            )
-                        )
-                    else:
-                        for row in batch:
-                            connection.execute(
-                                delete(document_embedding).where(
-                                    document_embedding.c.document_id == row["document_id"],
-                                    document_embedding.c.embedding_model == embedding_model,
-                                )
-                            )
-                        connection.execute(insert(document_embedding), batch)
+                    connection.execute(statement, rows[start : start + WRITE_BATCH_SIZE])
         except SQLAlchemyError as exc:
             raise StoreError("Falha ao gravar os embeddings.") from exc
         return len(rows)

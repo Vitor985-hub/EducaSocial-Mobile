@@ -21,8 +21,15 @@ EXPECTED_COLUMNS: dict[str, set[str]] = {
         "last_reviewed",
     },
     "source": {"id", "opportunity_id", "name", "url"},
-    "document": {"id", "opportunity_id", "source_id", "chunk_index", "content", "embedding_model"},
-    "document_embedding": {"id", "document_id", "embedding_model", "dimensions", "embedding"},
+    "document": {
+        "id",
+        "opportunity_id",
+        "source_id",
+        "chunk_index",
+        "content",
+        "embedding_model",
+        "embedding",
+    },
 }
 
 
@@ -49,15 +56,22 @@ def describe_contents(engine: Engine) -> list[str]:
                 continue
             total = connection.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar_one()
             lines.append(f"{table}: {total} linhas")
-        if inspector.has_table("document_embedding"):
+        has_embedding_column = inspector.has_table("document") and "embedding" in {
+            column["name"] for column in inspector.get_columns("document")
+        }
+        if has_embedding_column:
             rows = connection.execute(
                 text(
-                    "SELECT embedding_model, dimensions, COUNT(*) "
-                    "FROM document_embedding GROUP BY embedding_model, dimensions"
+                    "SELECT embedding_model, COUNT(*) FROM document "
+                    "WHERE embedding IS NOT NULL GROUP BY embedding_model"
                 )
             ).all()
-            for model, dimensions, total in rows:
-                lines.append(f"  embeddings {model} ({dimensions} dimensões): {total}")
+            for model, total in rows:
+                lines.append(f"  documentos com embedding ({model}): {total}")
+            without = connection.execute(
+                text("SELECT COUNT(*) FROM document WHERE embedding IS NULL")
+            ).scalar_one()
+            lines.append(f"  documentos sem embedding: {without}")
     return lines
 
 

@@ -6,7 +6,7 @@ O backend conversa com este serviço por HTTP, conforme `backend/docs/ai-integra
 
 ## Como funciona
 
-1. A ingestão transforma cada `opportunity` em chunks na tabela `document` e gera um embedding por chunk na tabela `document_embedding`.
+1. A ingestão transforma cada `opportunity` em chunks na tabela `document` e grava o embedding de cada chunk na própria linha de `document`, na coluna `embedding`.
 2. Na consulta, o embedding da pergunta é comparado com os dos chunks por similaridade de cosseno, em NumPy. Os vetores ficam em memória, com cache de `INDEX_TTL_SECONDS`.
 3. O filtro regional segue a regra do backend: programas nacionais sempre, estaduais da UF e municipais do município pedido.
 4. Se nenhum chunk passar de `RETRIEVAL_MIN_SCORE`, a resposta é "sem evidências" e o LLM nem é chamado.
@@ -25,7 +25,17 @@ O backend conversa com este serviço por HTTP, conforme `backend/docs/ai-integra
 | `app/tools` | `check_schema` e `ask`, para linha de comando |
 | `ingestion` | Chunking e pipeline de ingestão |
 
-LLM e embeddings são configurados separadamente (`LLM_PROVIDER` e `EMBEDDING_PROVIDER`). Os embeddings gravados ficam identificados por modelo em `document_embedding.embedding_model`, então modelos diferentes coexistem e a consulta usa só o ativo. Para o Gemini o identificador inclui as dimensões, por exemplo `gemini-embedding-001:768`.
+LLM e embeddings são configurados separadamente (`LLM_PROVIDER` e `EMBEDDING_PROVIDER`). Cada documento guarda um único vetor, junto com o modelo que o gerou em `document.embedding_model`, e a consulta usa só os documentos cujo modelo é o ativo. Trocar de modelo significa gerar os vetores de novo: o `embed` trata como pendentes os documentos sem vetor ou com vetor de outro modelo. Para o Gemini o identificador inclui as dimensões, por exemplo `gemini-embedding-001:768`.
+
+## O que o banco precisa ter
+
+A tabela `document` precisa das colunas `embedding_model` (já existe) e `embedding`, do tipo JSON, que aceita nulo. O módulo não cria nem altera tabelas, então a coluna deve ser adicionada por quem administra o banco, por exemplo:
+
+```sql
+ALTER TABLE document ADD COLUMN embedding JSON NULL;
+```
+
+Se a coluna tiver outro nome, ajuste a definição de `document` em `app/repositories/mysql.py` e a lista de `app/tools/check_schema.py`. O `check_schema` avisa quando a coluna não existe.
 
 ## Configuração
 
@@ -38,7 +48,7 @@ cp .env.example .env
 
 No Windows (PowerShell), ative com `.venv\Scripts\Activate.ps1`.
 
-Preencha no `.env` as variáveis `DB_*` (as mesmas do backend). O ideal é um usuário do banco com permissão de leitura nas tabelas, mais escrita apenas em `document_embedding` (e em `document`, se for usar `build-documents`).
+Preencha no `.env` as variáveis `DB_*` (as mesmas do backend). O ideal é um usuário do banco com permissão de leitura nas tabelas e de escrita apenas em `document` (`INSERT`, se for usar `build-documents`, e `UPDATE` das colunas `embedding` e `embedding_model`).
 
 Com Ollama (padrão):
 
@@ -113,4 +123,5 @@ Os testes usam provedores simulados e SQLite em memória; não dependem de Ollam
 - `RETRIEVAL_MIN_SCORE=0.45` é um ponto de partida. Calibre com as 15 a 20 perguntas de avaliação: suba se estiver respondendo o que não devia, baixe se estiver recusando o que devia responder.
 - Os provedores Ollama e Gemini foram testados só com respostas simuladas, seguindo o formato das APIs. O primeiro teste de verdade deve ser com `python -m app.tools.ask`.
 - A ingestão parte das oportunidades já curadas no banco. A extração automática de páginas oficiais não está implementada.
-- `document.embedding_model` não é atualizada pelo módulo; o modelo de cada vetor fica em `document_embedding`.
+- Cada documento guarda um só vetor. Não dá para manter, ao mesmo tempo, vetores de dois modelos para comparar; para isso seria preciso outra tabela.
+- Os vetores em JSON são lidos por inteiro a cada atualização do índice (`INDEX_TTL_SECONDS`). Com poucas centenas de chunks isso é rápido.
