@@ -3,13 +3,13 @@ import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from app.container import build_repository
-from app.core.config import get_settings
-from app.core.exceptions import AIServiceError, ProviderError
-from app.providers.base import EmbeddingProvider
-from app.providers.factory import build_embedding_provider
-from app.repositories.chunks import ChunkRepository, NewDocument
-from ingestion.chunking import build_opportunity_chunks
+from app.ai.container import build_repository
+from app.ai.core.config import get_settings
+from app.ai.core.exceptions import AIServiceError, ProviderError
+from app.ai.ingestion.chunking import build_opportunity_chunks
+from app.ai.providers.base import EmbeddingProvider
+from app.ai.providers.factory import build_embedding_provider
+from app.ai.repositories.chunks import ChunkRepository, NewDocument
 
 EMBED_BATCH_SIZE = 32
 
@@ -65,7 +65,7 @@ def embed_pending(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="python -m ingestion.pipeline")
+    parser = argparse.ArgumentParser(prog="python -m app.ai.ingestion.pipeline")
     parser.add_argument("command", choices=["build-documents", "embed"])
     parser.add_argument(
         "--apply",

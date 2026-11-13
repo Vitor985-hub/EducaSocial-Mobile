@@ -1,4 +1,4 @@
-from app.repositories.chunks import NewDocument, OpportunityRecord
+from app.ai.repositories.chunks import NewDocument, OpportunityRecord
 
 
 def split_text(text: str, max_chars: int, overlap: int) -> list[str]:
