@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -107,3 +107,14 @@ def test_provider_failure_becomes_503(app: FastAPI, client: TestClient) -> None:
             "message": "Ollama indisponível ou com resposta inválida.",
         }
     }
+
+
+def test_production_without_api_key_refuses_requests(app: FastAPI, client: TestClient) -> None:
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        _env_file=None, environment="production"
+    )
+
+    response = client.post(URL, json={"question": "auxílio aluguel moradia"})
+
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "configuration_error"

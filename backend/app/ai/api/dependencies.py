@@ -6,7 +6,7 @@ from fastapi import Depends, Header
 
 from app.ai.container import build_rag_service
 from app.ai.core.config import Settings, get_settings
-from app.ai.core.exceptions import AuthenticationError
+from app.ai.core.exceptions import AuthenticationError, ConfigurationError
 from app.ai.services.rag_service import RagService
 
 
@@ -21,6 +21,8 @@ def require_api_key(
 ) -> None:
     expected = settings.ai_service_api_key
     if expected is None:
+        if settings.environment == "production":
+            raise ConfigurationError("AI_SERVICE_API_KEY é obrigatória em produção.")
         return
     provided = (x_api_key or "").encode()
     if not secrets.compare_digest(provided, expected.get_secret_value().encode()):

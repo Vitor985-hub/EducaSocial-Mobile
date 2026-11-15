@@ -1,6 +1,6 @@
 # Educa Social — Backend
 
-API REST em FastAPI para consulta de programas sociais, com filtros por estado e município. O módulo de IA (RAG) é um serviço separado, consumido por uma interface definida em `docs/ai-integration-contract.md`.
+API REST em FastAPI para consulta de programas sociais, com filtros por estado e município. O módulo de IA (RAG) fica em `app/ai` e é consumido por uma interface definida em `docs/ai-integration-contract.md`.
 
 ## Aviso sobre dados
 

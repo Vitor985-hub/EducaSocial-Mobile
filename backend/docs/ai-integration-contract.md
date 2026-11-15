@@ -1,6 +1,6 @@
 # Contrato de integração com o módulo de IA
 
-Status: proposta para validação com quem implementar o módulo de IA. O backend define a interface e não contém lógica de IA.
+Status: o módulo de IA roda no mesmo processo do backend (`app/ai`), ativado por `AI_ENABLED=true`. A interface `AIServiceClient` é a fronteira, e `InProcessAIClient` a implementa chamando o `RagService` diretamente. O contrato HTTP abaixo continua válido para o aplicativo e para um eventual serviço separado.
 
 ## Responsabilidades
 

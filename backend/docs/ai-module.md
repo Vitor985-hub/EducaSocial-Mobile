@@ -1,8 +1,8 @@
 # Educa Social — Módulo de IA
 
-Serviço RAG separado do backend. Recebe uma pergunta, recupera os trechos mais relevantes das fontes cadastradas no banco e gera uma resposta fundamentada, acompanhada das fontes. Quando os trechos não bastam, responde que não encontrou evidências suficientes, sem inventar.
+Módulo RAG do backend, em `app/ai`. Recebe uma pergunta, recupera os trechos mais relevantes das fontes cadastradas no banco e gera uma resposta fundamentada, acompanhada das fontes. Quando os trechos não bastam, responde que não encontrou evidências suficientes, sem inventar.
 
-O backend conversa com este serviço por HTTP, conforme `backend/docs/ai-integration-contract.md`. Este módulo não importa nada do backend.
+O backend usa este módulo no mesmo processo, por `InProcessAIClient` (`app/integrations/ai_client.py`), com `AI_ENABLED=true`. O módulo não importa nada do backend e reaproveita o engine do banco recebido na criação. `app/ai/main.py` e `app/ai/api` continuam disponíveis para rodar o módulo como serviço HTTP separado, caso isso volte a ser necessário.
 
 ## Como funciona
 

@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from pydantic import ValidationError
 
 from app.ai.core.config import Settings
@@ -45,13 +45,6 @@ def test_database_url_reports_missing_variables_without_values() -> None:
     assert "DB_NAME" in error.value.message
     assert "DB_USER" in error.value.message
     assert "DB_HOST" not in error.value.message
-
-
-def test_production_requires_api_key() -> None:
-    with pytest.raises(ValidationError):
-        make_settings(environment="production")
-
-    assert make_settings(environment="production", ai_service_api_key="segredo")
 
 
 def test_overlap_must_be_smaller_than_chunk_size() -> None:

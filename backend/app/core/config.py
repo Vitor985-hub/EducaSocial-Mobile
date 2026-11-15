@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     app_name: str = "Educa Social API"
     environment: Literal["development", "staging", "production"] = "development"
     api_version: str = "0.1.0"
+    ai_enabled: bool = False
 
 
 @lru_cache

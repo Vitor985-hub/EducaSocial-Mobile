@@ -13,17 +13,17 @@ def build_engine(settings: Settings) -> Engine:
     return create_engine(settings.database_url, pool_pre_ping=True, pool_recycle=1800)
 
 
-def build_repository(settings: Settings) -> ChunkRepository:
+def build_repository(settings: Settings, engine: Engine | None = None) -> ChunkRepository:
     if settings.chunk_store == "local":
         return LocalChunkRepository(settings.local_store_path)
-    return SqlChunkRepository(build_engine(settings))
+    return SqlChunkRepository(engine or build_engine(settings))
 
 
-def build_rag_service(settings: Settings) -> RagService:
+def build_rag_service(settings: Settings, engine: Engine | None = None) -> RagService:
     embedder = build_embedding_provider(settings)
     llm = build_llm_provider(settings)
     index_provider = ChunkIndexProvider(
-        build_repository(settings), embedder.model_name, settings.index_ttl_seconds
+        build_repository(settings, engine), embedder.model_name, settings.index_ttl_seconds
     )
     return RagService(
         embedder, llm, index_provider, settings.retrieval_top_k, settings.retrieval_min_score

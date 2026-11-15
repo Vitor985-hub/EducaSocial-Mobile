@@ -50,8 +50,6 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_consistency(self) -> "Settings":
-        if self.environment == "production" and self.ai_service_api_key is None:
-            raise ValueError("AI_SERVICE_API_KEY é obrigatória em produção.")
         if self.chunk_overlap_chars >= self.chunk_max_chars:
             raise ValueError("CHUNK_OVERLAP_CHARS deve ser menor que CHUNK_MAX_CHARS.")
         return self
