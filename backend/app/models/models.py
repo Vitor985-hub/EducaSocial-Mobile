@@ -97,3 +97,4 @@ class Document(Base):
     chunk_index = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
     embedding_model = Column(String(255))
+    embedding = Column(JSON, nullable=True)
