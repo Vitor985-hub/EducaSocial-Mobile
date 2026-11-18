@@ -1,7 +1,8 @@
 import argparse
 import json
 import sys
-from collections.abc import Sequence
+import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -38,7 +39,14 @@ def expected_titles(case: dict[str, Any], programs: dict[str, dict[str, Any]]) -
 
 
 def expected_urls(case: dict[str, Any], programs: dict[str, dict[str, Any]]) -> set[str]:
-    return {programs[key]["source"]["url"] for key in case["expected_programs"] if key in programs}
+    urls: set[str] = set()
+    for key in case["expected_programs"]:
+        program = programs.get(key)
+        if program is None:
+            continue
+        for source in [program["source"]] if "source" in program else program.get("sources", []):
+            urls.add(source["url"])
+    return urls
 
 
 def evaluate_retrieval(
@@ -47,17 +55,26 @@ def evaluate_retrieval(
     cases: Sequence[dict[str, Any]],
     programs: dict[str, dict[str, Any]],
     min_score: float,
+    delay: float = 0.0,
+    sleep: Callable[[float], None] = time.sleep,
 ) -> list[Row]:
     rows: list[Row] = []
-    for case in cases:
+    for position, case in enumerate(cases):
+        if position and delay:
+            sleep(delay)
+        expect = case["expect"]
+        try:
+            query_vector = embedder.embed_query(case["question"])
+        except AIServiceError as exc:
+            rows.append(Row(case["question"], expect, "ERRO", exc.message))
+            continue
         hits = index.search(
-            embedder.embed_query(case["question"]),
+            query_vector,
             case.get("state"),
             case.get("municipality"),
             max(len(index), 1),
             -0.99,
         )
-        expect = case["expect"]
         if not hits:
             rows.append(Row(case["question"], expect, "sem trechos", "nenhum trecho no filtro"))
             continue
@@ -93,16 +110,24 @@ def evaluate_generation(
     service: RagService,
     cases: Sequence[dict[str, Any]],
     programs: dict[str, dict[str, Any]],
+    delay: float = 0.0,
+    sleep: Callable[[float], None] = time.sleep,
 ) -> list[Row]:
     rows: list[Row] = []
-    for case in cases:
-        response = service.ask(
-            QueryRequest(
-                question=case["question"],
-                state=case.get("state"),
-                municipality=case.get("municipality"),
+    for position, case in enumerate(cases):
+        if position and delay:
+            sleep(delay)
+        try:
+            response = service.ask(
+                QueryRequest(
+                    question=case["question"],
+                    state=case.get("state"),
+                    municipality=case.get("municipality"),
+                )
             )
-        )
+        except AIServiceError as exc:
+            rows.append(Row(case["question"], case["expect"], "ERRO", exc.message))
+            continue
         refused = response.answer == NO_EVIDENCE_MESSAGE
         urls = {source.url for source in response.sources}
         expect = case["expect"]
@@ -153,8 +178,11 @@ def format_rows(rows: Sequence[Row]) -> list[str]:
         score = f"{row.score:.3f}" if row.score is not None else "  -  "
         lines.append(f"{score} {row.verdict:<34} [{row.expect}] {row.question} -> {row.detail}")
     failures = sum(row.verdict.startswith("FALHA") for row in rows)
+    errors = sum(row.verdict == "ERRO" for row in rows)
     review = sum(row.verdict in {"depende do LLM", "revisar resposta"} for row in rows)
-    lines.append(f"\n{len(rows)} perguntas | {failures} falhas | {review} para revisar")
+    lines.append(
+        f"\n{len(rows)} perguntas | {failures} falhas | {errors} erros | {review} para revisar"
+    )
     return lines
 
 
@@ -163,8 +191,10 @@ def main() -> int:
     parser.add_argument("--cases", default="data/avaliacao_lote1.json")
     parser.add_argument("--programs", default="data/lote1_programas.json")
     parser.add_argument("--generate", action="store_true")
+    parser.add_argument("--delay", type=float, default=None)
     args = parser.parse_args()
     settings = get_settings()
+    delay = args.delay if args.delay is not None else (6.0 if args.generate else 0.0)
     try:
         cases = load_json(Path(args.cases))["perguntas"]
         programs = {item["key"]: item for item in load_json(Path(args.programs))["programas"]}
@@ -180,10 +210,10 @@ def main() -> int:
                 settings.retrieval_top_k,
                 settings.retrieval_min_score,
             )
-            rows = evaluate_generation(service, cases, programs)
+            rows = evaluate_generation(service, cases, programs, delay)
         else:
             rows = evaluate_retrieval(
-                provider.get(), embedder, cases, programs, settings.retrieval_min_score
+                provider.get(), embedder, cases, programs, settings.retrieval_min_score, delay
             )
     except (OSError, KeyError, json.JSONDecodeError) as exc:
         print(

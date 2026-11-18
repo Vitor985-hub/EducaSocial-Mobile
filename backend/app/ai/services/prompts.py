@@ -18,8 +18,9 @@ SYSTEM_PROMPT = (
     f"{NO_EVIDENCE_TOKEN} e nada mais.\n"
     "Cite os trechos usados com o número entre colchetes, como [1].\n"
     "Responda em português do Brasil, em linguagem simples e de forma objetiva.\n"
-    "Se um trecho tiver status diferente de current, avise que a informação pode estar "
-    "desatualizada e deve ser confirmada na fonte oficial."
+    "Se um trecho tiver status diferente de current, termine a resposta com uma única frase "
+    "curta e natural, como: Confirme essa informação na fonte oficial antes de agir. "
+    "Nunca comece a resposta com avisos e nunca escreva o nome do status, como unconfirmed.\n"
 )
 
 
