@@ -1,3 +1,4 @@
+from app.ai.core.exceptions import ProviderError
 from app.ai.services.prompts import NO_EVIDENCE_MESSAGE
 from app.ai.services.rag_service import RagService
 from app.ai.services.retrieval import ChunkIndexProvider, VectorIndex
@@ -103,7 +104,7 @@ def test_generation_checks_refusal_and_cited_source() -> None:
 def test_format_rows_counts_failures() -> None:
     rows = evaluate_retrieval(VectorIndex(chunks()), EMBEDDER, CASES, PROGRAMS, 0.3)
 
-    assert "3 perguntas | 1 falhas | 0 para revisar" in format_rows(rows)[-1]
+    assert "3 perguntas | 1 falhas | 0 erros | 0 para revisar" in format_rows(rows)[-1]
     assert NO_EVIDENCE_MESSAGE
 
 
@@ -114,3 +115,35 @@ def test_retrieval_reports_expected_program_missing_from_the_index() -> None:
     rows = evaluate_retrieval(VectorIndex(chunks()), EMBEDDER, [case], programs, 0.3)
 
     assert rows[0].verdict == "FALHA: programa não está no banco"
+
+
+def test_provider_errors_are_recorded_per_question_without_aborting() -> None:
+    class RateLimitedEmbedder(HashEmbedder):
+        def embed_query(self, text):
+            if "dólar" in text:
+                raise ProviderError("Gemini retornou erro HTTP 429.")
+            return super().embed_query(text)
+
+    pauses: list[float] = []
+
+    rows = evaluate_retrieval(
+        VectorIndex(chunks()), RateLimitedEmbedder(), CASES, PROGRAMS, 0.3, 2.0, pauses.append
+    )
+
+    assert [row.verdict for row in rows] == ["ok", "FALHA: programa errado", "ERRO"]
+    assert rows[2].detail == "Gemini retornou erro HTTP 429."
+    assert pauses == [2.0, 2.0]
+    assert "1 erros" in format_rows(rows)[-1]
+
+
+def test_generation_errors_are_recorded_per_question() -> None:
+    class FailingLLM(ScriptedLLM):
+        def generate(self, system, user):
+            raise ProviderError("Gemini retornou erro HTTP 429.")
+
+    index = ChunkIndexProvider(StaticRepository(chunks()), EMBEDDER.model_name, 300)
+    service = RagService(EMBEDDER, FailingLLM("x"), index, 3, 0.3)
+
+    rows = evaluate_generation(service, CASES[:2], PROGRAMS, 0.0, lambda seconds: None)
+
+    assert [row.verdict for row in rows] == ["ERRO", "ERRO"]
