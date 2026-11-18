@@ -1,22 +1,34 @@
 import { useState } from 'react';
-import { Modal, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { services } from "@/services/catalog";
 
-const SERVICE  = [
-  {id: 1, name: 'CadÚnico — Cadastro Único (Prefeitura de São Paulo)', description: 'O CadÚnico reúne as famílias de baixa renda do país e permite participar de programas sociais federais, estaduais e municipais, como o Programa Bolsa Família, o BPC e a Tarifa Social de Energia Elétrica e Água.'},
-  {id: 2, name: 'Bolsa Família', description: 'O Programa Bolsa Família é um programa de transferência de renda do Governo Federal que tem como objetivo garantir a segurança alimentar e nutricional das famílias em situação de pobreza e extrema pobreza.'},
-  {id: 3, name: 'BPC — Benefício de Prestação Continuada', description: 'O Benefício de Prestação Continuada (BPC) é um benefício assistencial pago pelo Governo Federal a pessoas com deficiência e idosos com 65 anos ou mais que não têm condições de se sustentar.'},
-  {id: 4, name: 'Tarifa Social de Energia Elétrica', description: 'A Tarifa Social de Energia Elétrica é um benefício do Governo Federal que concede descontos na conta de energia elétrica para famílias de baixa renda.'},
-  {id: 5, name: 'Tarifa Social de Água', description: 'A Tarifa Social de Água é um benefício do Governo Federal que concede descontos na conta de água para famílias de baixa renda.'},
-]
+type CardServiceProps = {
+  categoryId?: number;
+  regionId?: number;
+};
 
-
-export default function CardService() {
+export default function CardService({ categoryId, regionId }: CardServiceProps) {
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedService, setSelectedService] = useState<(typeof SERVICE)[number] | null>(null);
+  const [selectedService, setSelectedService] = useState<(typeof services)[number] | null>(null);
+  const visibleServices = services.filter((service) => {
+    const matchesCategory =
+      categoryId === undefined || service.categoryId === categoryId;
+    const matchesRegion =
+      regionId === undefined ||
+      service.regions === regionId ||
+      (regionId !== 1 && service.regions === 1);
+
+    return matchesCategory && matchesRegion;
+  });
 
   return (
     <View className="flex-row flex-wrap gap-4 mt-5 justify-center">
-      {SERVICE.map((service) => (
+      {visibleServices.length === 0 ? (
+        <Text className="w-full text-center text-base text-slate-600 justify-center">
+          Nenhum serviço associado a esta seleção
+        </Text>
+      ) : visibleServices.map((service) => (
         <View key={service.id} className="w-full">
           <Pressable
             onPress={() => {
