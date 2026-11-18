@@ -1,22 +1,35 @@
 import { useState } from 'react';
 import { Modal, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 
+const SERVICE  = [
+  {id: 1, name: 'CadÚnico — Cadastro Único (Prefeitura de São Paulo)', description: 'O CadÚnico reúne as famílias de baixa renda do país e permite participar de programas sociais federais, estaduais e municipais, como o Programa Bolsa Família, o BPC e a Tarifa Social de Energia Elétrica e Água.'},
+  {id: 2, name: 'Bolsa Família', description: 'O Programa Bolsa Família é um programa de transferência de renda do Governo Federal que tem como objetivo garantir a segurança alimentar e nutricional das famílias em situação de pobreza e extrema pobreza.'},
+  {id: 3, name: 'BPC — Benefício de Prestação Continuada', description: 'O Benefício de Prestação Continuada (BPC) é um benefício assistencial pago pelo Governo Federal a pessoas com deficiência e idosos com 65 anos ou mais que não têm condições de se sustentar.'},
+  {id: 4, name: 'Tarifa Social de Energia Elétrica', description: 'A Tarifa Social de Energia Elétrica é um benefício do Governo Federal que concede descontos na conta de energia elétrica para famílias de baixa renda.'},
+  {id: 5, name: 'Tarifa Social de Água', description: 'A Tarifa Social de Água é um benefício do Governo Federal que concede descontos na conta de água para famílias de baixa renda.'},
+]
+
+
 export default function CardService() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedService, setSelectedService] = useState<(typeof SERVICE)[number] | null>(null);
 
   return (
-    <View className="flex-row flex-wrap gap-4 mt-4 justify-center">
-      {/* Seu Card Original */}
-      <View className="w-full">
-        <Pressable
-          onPress={() => setModalVisible(true)}
-          className="bg-slate-200 h-40 w-full p-3 rounded-3xl border-2 border-slate-300 active:opacity-80"
-        >
-          <Text className="text-xl font-bold text-slate-800">Service Name</Text>
-          <Text className="text-lg text-slate-600">Service Description</Text>
-          <Text className="text-base text-slate-600 mt-2">ver mais detalhes</Text>
+    <View className="flex-row flex-wrap gap-4 mt-5 justify-center">
+      {SERVICE.map((service) => (
+        <View key={service.id} className="w-full">
+          <Pressable
+            onPress={() => {
+              setSelectedService(service);
+              setModalVisible(true);
+            }}
+            className="bg-slate-200 h-auto w-full p-3 rounded-3xl border-2 border-slate-300 active:opacity-80"
+          >
+          <Text className="text-xl font-bold text-slate-800 mb-2">{service.name}</Text>
+          <Text className="text-lg text-slate-600" numberOfLines={3}>{service.description}</Text>
         </Pressable>
       </View>
+      ))}
 
       {/* Modal em Tela Cheia */}
       <Modal
@@ -47,11 +60,15 @@ export default function CardService() {
 
             <View className="bg-slate-50 rounded-3xl p-6 border border-slate-300 shadow-sm">
               <Text className="text-2xl font-bold text-slate-900 mb-5">
-                Nome do serviço
+                {selectedService?.name}
               </Text>
-
-
-              <View className="mb-5">
+              <Text className="text-base font-bold text-slate-800 mb-1">
+                Descrição
+              </Text>
+              <Text className="text-base text-slate-600 leading-6">
+                {selectedService?.description}
+              </Text>
+                            <View className="mb-5">
                 <Text className="text-base font-bold text-slate-800 mb-1">
                   Serviço disponível no(s) estado(s):
                 </Text>

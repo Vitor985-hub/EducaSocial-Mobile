@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
-    "@expo/ui": "~58.0.28",
+    "@expo/material-symbols": "^0.1.1",
+    "@expo/ui": "~58.0.29",
     "@expo/vector-icons": "^15.0.2",
     "@react-navigation/elements": "^2.9.46",
     "@react-navigation/material-top-tabs": "^7.8.2",
