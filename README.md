@@ -6,10 +6,6 @@
 
 # Educa Social
 
-## Nome do grupo
-
-> Preencher com o nome do grupo.
-
 ## 👨‍🎓 Integrantes
 
 - <a href="LINK_LINKEDIN">Francismar</a> — backend e API
@@ -70,6 +66,41 @@ O **Educa Social** é um aplicativo Android que ajuda famílias de baixa renda a
 
 
 ## 📁 Estrutura de pastas
+
+```text
+EducaSocial-Mobile/
+├─ .github/                # GitHub Actions, workflows, etc.
+├─ assets/                 # Logos, imagens estáticas
+├─ backend/
+│   ├─ app/
+│   │   ├─ api/            # Rotas FastAPI (programs, assistant)
+│   │   ├─ ai/             # Módulo RAG (provedores, ingestion, services, tools)
+│   │   ├─ core/           # Configurações, exceções, utilitários
+│   │   ├─ integrations/   # Cliente que conecta a API ao módulo AI
+│   │   ├─ models/         # ORM SQLAlchemy (region, opportunity, etc.)
+│   │   ├─ repositories/   # Acesso a dados (MySQL, local)
+│   │   ├─ schemas/        # Pydantic schemas (API contracts)
+│   │   ├─ services/       # Lógica de negócio (program service, assistant)
+│   │   └─ main.py
+│   ├─ data/               # Dados de avaliação e lotes de programas
+│   ├─ docs/               # Documentação técnica (ai‑module.md, contracts)
+│   ├─ tests/              # Testes automatizados (pytest)
+│   └─ requirements*.txt
+├─ database/               # Scripts e arquivos relacionados ao banco
+├─ docs/                   # Documentação geral do projeto
+├─ frontend/
+│   └─ EducaSocialApp/
+│       ├─ src/
+│       │   ├─ app/                # Telas/rotas (Expo Router)
+│       │   ├─ components/         # UI reutilizável
+│       │   ├─ hooks/              # Hooks custom
+│       │   ├─ services/           # Camada de API (axios)
+│       │   ├─ styles/             # Tailwind/nativewind
+│       │   └─ types/              # Tipos TypeScript
+│       ├─ .env.example
+│       └─ App.tsx
+└─ README.md               # Este documento
+```
 
 - <b>.github</b>: configurações do GitHub para automação de processos do repositório.
 - <b>assets</b>: imagens e demais arquivos não estruturados, como o logo da FIAP.
