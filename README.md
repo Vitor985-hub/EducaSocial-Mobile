@@ -8,19 +8,17 @@
 
 ## 👨‍🎓 Integrantes
 
-- <a href="LINK_LINKEDIN">Francismar</a> — backend e API
-- <a href="LINK_LINKEDIN">Antonio</a> — banco de dados e curadoria das fontes
-- <a href="LINK_LINKEDIN">Beatriz</a> — interface do aplicativo mobile
-- <a href="LINK_LINKEDIN">Matheus</a> — integração, testes e documentação
-- <a href="https://www.linkedin.com/in/LINK_LINKEDIN">Vitor Eiji</a> — inteligência artificial (RAG, embeddings e avaliação)
-
-> Completar com o nome completo de cada integrante e o link do LinkedIn.
+- [Vitor Eiji](https://github.com/Vitor985-hub)
+- [Beatriz Pilecarte](https://github.com/BPilecarte)
+- [Franciscmar Alves](https://github.com/yggdrasilGit)
+- [Matheus Soares](https://github.com/matheusbento04)
+- [Antonio Barros](https://github.com/AntonioBarros19)
 
 ## 👩‍🏫 Professores
 
 ### Tutor(a)
 
-- <a href="LINK_LINKEDIN">Nome do tutor(a)</a>
+- [Andre Godoi Chiochiovatto](https://www.linkedin.com/in/andregodoichiovato/)
 
 ### Coordenador(a)
 
@@ -101,24 +99,6 @@ EducaSocial-Mobile/
 │       └─ App.tsx
 └─ README.md               # Este documento
 ```
-
-- <b>.github</b>: configurações do GitHub para automação de processos do repositório.
-- <b>assets</b>: imagens e demais arquivos não estruturados, como o logo da FIAP.
-- <b>backend</b>: API em FastAPI e o módulo de IA.
-  - <b>backend/app/api</b>: rotas (`programs`, `assistant`), dependências e tratamento de erros.
-  - <b>backend/app/ai</b>: módulo de IA (RAG): provedores (Ollama e Gemini), chunking, índice vetorial, serviço de perguntas e respostas, pipeline de ingestão e ferramentas de avaliação.
-  - <b>backend/app/core</b>: configurações, exceções e utilitários de texto.
-  - <b>backend/app/integrations</b>: cliente que liga a API ao módulo de IA.
-  - <b>backend/app/models</b>, <b>schemas</b>, <b>repositories</b>, <b>services</b>: modelos, contratos da API, acesso a dados (MySQL) e regras de negócio.
-  - <b>backend/docs</b>: documentação técnica do módulo de IA (`ai-module.md`) e do contrato de integração (`ai-integration-contract.md`).
-  - <b>backend/tests</b>: testes automatizados (pytest).
-- <b>database</b>: arquivos relacionados ao banco de dados.
-- <b>docs</b>: documentos do projeto.
-- <b>frontend/EducaSocialApp</b>: aplicativo React Native (Expo) com TypeScript.
-  - <b>src/app</b>: telas e rotas (Expo Router): início, categorias, estados e chat.
-  - <b>src/components</b>, <b>hooks</b>, <b>services</b>, <b>types</b>, <b>styles</b>: componentes, hooks, chamadas à API, tipos e tema.
-- <b>infra</b>: arquivos de infraestrutura e implantação.
-- <b>README.md</b>: este documento.
 
 ## 🔧 Como executar o código
 
