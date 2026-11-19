@@ -1,25 +1,41 @@
 import CardCategory from "@/components/card-category";
 import CardService from "@/components/card-service";
+import { theme } from "@/styles/theme";
 
-import { Text, View, ScrollView } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
-    return (
+  return (
     <ScrollView
-      style={{ flex: 1 }} 
-      className="bg-slate-100" 
-      showsVerticalScrollIndicator={false}>
-        
-        <View className="w-full px-8 pb-5">
-          <Text className="text-2xl font-bold text-slate-800 mt-5">Categorias mais acessadas</Text>
-          <CardCategory/>
-        </View>
+      style={styles.screen}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="w-full px-8 mb-3">
+        <Text style={styles.title}>
+          Categorias mais acessadas
+        </Text>
+        <CardCategory limit={6} sort="popularity" />
+      </View>
 
-        <View className="w-full px-8 pb-5">
-          <Text className="text-2xl font-bold text-slate-800">Serviços mais acessados</Text>
-          <CardService/>
-        </View>
+      <View className="w-full px-8 mb-3">
+        <Text style={styles.title}>Serviços mais acessados</Text>
+        <CardService limit={5} />
+      </View>
     </ScrollView>
-    );
-
+  );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  title: {
+    fontSize: theme.typography.title.fontSize,
+    color: theme.colors.primary,
+    fontWeight: theme.typography.title.fontWeight,
+    lineHeight: theme.typography.title.lineHeight,
+    marginBottom: theme.typography.title.marginBottom,
+    marginTop: theme.typography.title.marginTop,
+  }
+});

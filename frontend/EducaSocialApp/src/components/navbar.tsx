@@ -3,6 +3,7 @@ import { PlatformPressable } from '@react-navigation/elements';
 import { useLinkBuilder } from '@react-navigation/native';
 import type { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs';
 import Constants from 'expo-constants';
+import { theme } from '@/styles/theme';
 
 const statusBarHeight = Constants.statusBarHeight;
 
@@ -11,8 +12,12 @@ export function Navbar({ state, descriptors, navigation, position }: MaterialTop
 
   return (
     <View
-      className="w-full flex-row items-center justify-between border-b-2 border-slate-400 bg-slate-100 px-4 pb-5"
-      style={{ marginTop: statusBarHeight + 8 }}
+      className="w-full flex-row items-center justify-between border-b-2 px-4 pb-5"
+      style={{
+        backgroundColor: theme.colors.background,
+        borderColor: theme.colors.border,
+        marginTop: statusBarHeight + 8,
+      }}
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
@@ -52,8 +57,8 @@ export function Navbar({ state, descriptors, navigation, position }: MaterialTop
             onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
             style={{
               alignItems: 'center',
-              backgroundColor: isFocused ? '#737373' : 'transparent',
-              borderColor: '#475569',
+              backgroundColor: isFocused ? theme.colors.primary : 'transparent',
+              borderColor: theme.colors.primary,
               borderRadius: 9999,
               borderWidth: isFocused ? 0 : 2,
               paddingHorizontal: 12,
@@ -62,8 +67,8 @@ export function Navbar({ state, descriptors, navigation, position }: MaterialTop
           >
             <Animated.Text
               style={{
-                color: isFocused ? '#ffffff' : '#64748b',
-                fontSize: 16,
+                color: isFocused ? theme.colors.onPrimary : theme.colors.textSecondary,
+                fontSize: theme.fontSizes.md,
                 opacity,
               }}
             >

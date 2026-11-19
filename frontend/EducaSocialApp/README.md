@@ -25,17 +25,29 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+## Conectar o chat à IA
 
-When you're ready, run:
+O chat envia perguntas para `POST /api/v1/assistant/query` no backend. Copie o exemplo para `.env` na raiz deste projeto e configure o endereço base do backend:
 
-```bash
-npm run reset-project
+```powershell
+Copy-Item .env.example .env
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+```env
+EXPO_PUBLIC_API_URL=http://192.168.1.10:8000
+```
 
-### Other setup steps
+Substitua o IP de exemplo pelo endereço que o dispositivo consegue acessar. O Expo carrega `.env`, não `.env.example`; reinicie o servidor Expo após criar ou alterar o arquivo. Em um aparelho físico, `localhost` aponta para o próprio aparelho; use o IP da máquina que executa o backend. No emulador Android, use `http://10.0.2.2:8000`.
+
+As chaves do provedor de IA devem permanecer no backend. Inicie-o com o módulo de IA habilitado e reinicie o Expo após alterar `.env`.
+
+## Catálogo de categorias e serviços
+
+Os cards carregam os programas pela API `GET /api/v1/programs`; os detalhes são consultados por `GET /api/v1/programs/{id}`. As categorias exibidas são derivadas dos programas retornados pela API. O catálogo antigo do frontend foi mantido comentado em `src/services/catalog.ts` apenas como referência para testes.
+
+No backend atual, esses endpoints ainda usam os dados fictícios de `FAKE_PROGRAMS`. Para exibir dados reais, é necessário conectar o repositório do backend à base oficial.
+
+## Ferramentas de desenvolvimento
 
 - To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
 - If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
