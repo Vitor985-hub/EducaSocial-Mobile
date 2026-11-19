@@ -78,8 +78,10 @@ rota → serviço → repositório → dados
 | Integrações | `app/integrations` | Clientes de serviços externos, como o módulo de IA. |
 | Core | `app/core` | Configuração, exceções e utilitários. |
 
-`ProgramRepository` é um `Protocol`. Trocar o repositório em memória pelo PostgreSQL significa escrever uma nova implementação e apontar `get_program_repository` para ela, sem alterar serviços, rotas ou contratos.
+`ProgramRepository` é um `Protocol`. O acesso aos dados pode ser implementado por repositórios em memória ou por MySQL, sem alterar serviços, rotas ou contratos.
 
-## Pendente
+## Banco de dados
 
-Etapa 7: PostgreSQL, SQLAlchemy e Alembic, quando o banco estiver pronto.
+O banco utiliza **MySQL 8.0** hospedado no **Amazon RDS**, na região AWS `us-east-1`. Configure a conexão pelas variáveis `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` e `DB_PASSWORD`.
+
+O dump do schema está disponível em `database/schema_dbaeducasocial.sql`. O endpoint, o usuário e a senha do RDS não devem ser publicados no repositório.

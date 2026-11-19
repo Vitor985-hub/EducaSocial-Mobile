@@ -48,6 +48,10 @@ O **Educa Social** é um aplicativo Android que ajuda famílias de baixa renda a
 
 **Limitações.** O conteúdo cobre apenas a região piloto e 13 programas; valores e regras de benefícios mudam, por isso a informação deve sempre ser confirmada na fonte oficial; a cota gratuita do Gemini limita o volume de perguntas.
 
+## 🗄️ Banco de dados
+
+O banco de dados do Educa Social foi desenvolvido em **MySQL 8.0** e está hospedado em **Amazon RDS**, serviço de banco de dados gerenciado da AWS.
+
 ## 📱 Frontend (React Native)
 
 > [!NOTE]
