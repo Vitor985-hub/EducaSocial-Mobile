@@ -52,6 +52,11 @@ O **Educa Social** é um aplicativo Android que ajuda famílias de baixa renda a
 
 O banco de dados do Educa Social foi desenvolvido em **MySQL 8.0** e está hospedado em **Amazon RDS**, serviço de banco de dados gerenciado da AWS.
 
+### EER Diagram/DER (Diagrama de Entidade e Relacionamento) - Representação visual da estrutura do banco de dados
+
+<img width="824" height="769" alt="eer_diagram_img" src="https://github.com/user-attachments/assets/1e93ccac-1e4d-4c9a-9cc1-02b7478b8609" />
+
+
 ## 📱 Frontend (React Native)
 
 > [!NOTE]
