@@ -7,9 +7,10 @@ from fastapi import Depends
 from app.ai.core.exceptions import AIServiceError
 from app.core.config import get_settings
 from app.integrations.ai_client import AIServiceClient, DisabledAIClient, InProcessAIClient
-from app.repositories.fake_programs import FAKE_PROGRAMS
+from app.repositories.sql_program import SqlProgramRepository
 from app.repositories.in_memory_program import InMemoryProgramRepository
 from app.repositories.program import ProgramRepository
+from app.repositories.sql_program import SqlProgramRepository
 from app.services.assistant_service import AssistantService
 from app.services.program_service import ProgramService
 
@@ -18,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 @lru_cache
 def get_program_repository() -> ProgramRepository:
-    return InMemoryProgramRepository(FAKE_PROGRAMS)
+    if get_settings().programs_source == "memory":
+        return InMemoryProgramRepository(FAKE_PROGRAMS)
+    from app.database import engine
+
+    return SqlProgramRepository(engine)
 
 
 def get_program_service(

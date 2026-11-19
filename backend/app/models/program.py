@@ -9,6 +9,9 @@ class ProgramCategory(StrEnum):
     MORADIA = "moradia"
     ALIMENTACAO = "alimentacao"
     TRABALHO = "trabalho"
+    MOBILIDADE = "mobilidade"
+    ASSISTENCIA_SOCIAL = "assistencia_social"
+    ATENDIMENTO_AO_CIDADAO = "atendimento_ao_cidadao"
 
 
 class CoverageScope(StrEnum):

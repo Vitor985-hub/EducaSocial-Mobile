@@ -25,3 +25,8 @@ class InvalidFilterError(AppError):
 class AIServiceUnavailableError(AppError):
     status_code = 503
     code = "ai_unavailable"
+
+
+class ProgramStoreError(AppError):
+    status_code = 503
+    code = "store_unavailable"

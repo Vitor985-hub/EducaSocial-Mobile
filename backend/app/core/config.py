@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     environment: Literal["development", "staging", "production"] = "development"
     api_version: str = "0.1.0"
     ai_enabled: bool = False
+    programs_source: Literal["database", "memory"] = "database"
 
 
 @lru_cache

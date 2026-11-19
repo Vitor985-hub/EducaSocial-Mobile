@@ -13,7 +13,7 @@ class InMemoryProgramRepository:
         self, filters: ProgramFilters, offset: int, limit: int
     ) -> tuple[list[Program], int]:
         matching = sorted(
-            (program for program in self._programs.values() if _matches(program, filters)),
+            (program for program in self._programs.values() if matches(program, filters)),
             key=lambda program: program.id,
         )
         return matching[offset : offset + limit], len(matching)
@@ -22,7 +22,7 @@ class InMemoryProgramRepository:
         return self._programs.get(program_id)
 
 
-def _matches(program: Program, filters: ProgramFilters) -> bool:
+def matches(program: Program, filters: ProgramFilters) -> bool:
     if filters.category is not None and program.category != filters.category:
         return False
     if not _matches_location(program, filters.state, filters.municipality):
