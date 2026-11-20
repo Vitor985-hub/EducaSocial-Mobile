@@ -48,6 +48,14 @@ O **Educa Social** é um aplicativo Android que ajuda famílias de baixa renda a
 
 **Limitações.** O conteúdo cobre apenas a região piloto e 13 programas; valores e regras de benefícios mudam, por isso a informação deve sempre ser confirmada na fonte oficial; a cota gratuita do Gemini limita o volume de perguntas.
 
+## 🗄️ Banco de dados
+
+O banco de dados do projeto foi desenvolvido em **MySQL 8.0** e está hospedado em **Amazon RDS**, serviço de banco de dados gerenciado da AWS.
+
+### EER Diagram/DER (Diagrama de Entidade e Relacionamento) - Representação visual da estrutura do banco de dados
+<img width="824" height="769" alt="eer_diagram_img" src="https://github.com/user-attachments/assets/18496e6d-045a-4b56-abb3-9fee7834094a" />
+
+
 ## 📱 Frontend (React Native)
 
 > [!NOTE]
