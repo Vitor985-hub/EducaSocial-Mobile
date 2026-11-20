@@ -17,12 +17,10 @@
 ## 👩‍🏫 Professores
 
 ### Tutor(a)
-
-- [Andre Godoi Chiochiovatto](https://www.linkedin.com/in/andregodoichiovato/)
+- Caique Nonato da Silva
 
 ### Coordenador(a)
-
-- <a href="LINK_LINKEDIN">Nome do coordenador(a)</a>
+- [Andre Godoi Chiochiovatto](https://www.linkedin.com/in/andregodoichiovato/)
 
 ## 📜 Descrição
 
