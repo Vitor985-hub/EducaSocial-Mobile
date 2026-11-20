@@ -48,15 +48,6 @@ O **Educa Social** é um aplicativo Android que ajuda famílias de baixa renda a
 
 **Limitações.** O conteúdo cobre apenas a região piloto e 13 programas; valores e regras de benefícios mudam, por isso a informação deve sempre ser confirmada na fonte oficial; a cota gratuita do Gemini limita o volume de perguntas.
 
-## 🗄️ Banco de dados
-
-O banco de dados do projeto foi desenvolvido em **MySQL 8.0** e está hospedado em **Amazon RDS**, serviço de banco de dados gerenciado da AWS.
-
-### EER Diagram/DER (Diagrama de Entidade e Relacionamento) - Representação visual da estrutura do banco de dados
-
-<img width="824" height="769" alt="eer_diagram_img" src="https://github.com/user-attachments/assets/1e93ccac-1e4d-4c9a-9cc1-02b7478b8609" />
-
-
 ## 📱 Frontend (React Native)
 
 > [!NOTE]
@@ -70,6 +61,9 @@ O banco de dados do projeto foi desenvolvido em **MySQL 8.0** e está hospedado 
 - **Axios** – chamadas HTTP para a API backend.
 - **Zustand / React Context** – gerenciamento simples de estado global (usuário, configurações).
 - **Tailwind‑css (nativewind)** – estilos responsivos.
+
+## Video explicativo
+> > 📹 **Link do Vídeo de Demonstração:** [Assista aqui](https://youtu.be/WABlVdYizlU)
 
 
 ## 📁 Estrutura de pastas
@@ -151,6 +145,10 @@ DB_PASSWORD=<senha>
 Para desenvolvimento local sem Gemini, use `LLM_PROVIDER=ollama` e `EMBEDDING_PROVIDER=ollama` (com `ollama pull bge-m3` e o modelo de chat definido em `OLLAMA_LLM_MODEL`).
 
 Suba o servidor:
+
+---
+
+## 🔧 Como executar o código
 
 ```powershell
 uvicorn app.main:app --reload
